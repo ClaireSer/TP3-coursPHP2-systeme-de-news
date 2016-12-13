@@ -29,7 +29,11 @@ $manager = new NewsManager($db);
       } else {
         foreach ($allNews as $oneNews) {
           echo '<h3><a href="index.php?id=' . $oneNews->id() . '">' . $oneNews->titre() . '</a></h3>';
-          echo '<p>' . substr($oneNews->contenu(), 0, 200) . '...</p>';
+          if (strlen($oneNews->contenu()) > 200) {
+            echo '<p>' . substr($oneNews->contenu(), 0, 200) . '...</p>';
+          } else {
+            echo '<p>' . $oneNews->contenu() . '</p>';
+          }
         }
       }
 
