@@ -40,11 +40,10 @@ class NewsManager {
     }
 // modifie news
     public function upDate(News $news) {
-        $req = $this->_db->prepare('UPDATE news SET auteur = :auteur, titre = :titre, contenu = :contenu, dateModif = :dateModif WHERE id = :id');
+        $req = $this->_db->prepare('UPDATE news SET auteur = :auteur, titre = :titre, contenu = :contenu, dateModif = NOW() WHERE id = :id');
         $req->bindValue(':auteur', $news->auteur(), PDO::PARAM_INT);
         $req->bindValue(':titre', $news->titre(), PDO::PARAM_INT);
         $req->bindValue(':contenu', $news->contenu(), PDO::PARAM_INT);
-        $req->bindValue(':dateModif', NOW(), PDO::PARAM_INT);
         $req->bindValue(':id', $news->id(), PDO::PARAM_INT);
         $req->execute();
     }

@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 function chargerClasse($classname) {
   require $classname.'.php';
 }
@@ -21,7 +23,12 @@ $manager = new NewsManager($db);
     <a href="index.php">Accéder à l'accueil du site</a>
     <div style="text-align:center;">
         <form method="POST" action="admin.php">
-        <?php if (isset($_GET['modifier'])) $getNews = $manager->getById($_GET['modifier']); ?>
+        <?php 
+        if (isset($_GET['modifier'])) {
+            $getNews = $manager->getById($_GET['modifier']);
+            $_SESSION['modifier'] = $_GET['modifier'];
+        }
+        ?>
             <p>Auteur : <input type="text" name="auteur" <?php if (isset($_GET['modifier'])) echo 'value="' . $getNews->auteur() . '"'; ?> /></p>
             <p>Titre : <input type="text" name="titre" <?php if (isset($_GET['modifier'])) echo 'value="' . $getNews->titre() . '"'; ?> /></p>
             <p>Contenu : <br /> 
@@ -49,14 +56,15 @@ $manager = new NewsManager($db);
             if (isset($_POST['ajouter']) AND !empty($_POST['auteur']) AND !empty($_POST['titre']) AND !empty($_POST['contenu'])) {
                 $news = new News(['auteur' => $_POST['auteur'], 'titre' => $_POST['titre'], 'contenu' => $_POST['contenu']]); 
                 $newsAdded = $manager->add($news);
-                echo 'bonjour';
             } else {
                 $message = '<p>Veuillez remplir tous les champs.</p>';
-                echo $message;
             }
 
-            if (isset($_POST['modifier']) AND isset($_GET['modifier'])) {
-                $getNews = $manager->getById($_GET['modifier']);
+            if (isset($_POST['modifier'])) {
+                $getNews = $manager->getById($_SESSION['modifier']);
+                $getNews->setAuteur($_POST['auteur']);
+                $getNews->setTitre($_POST['titre']);
+                $getNews->setContenu($_POST['contenu']);
                 $newsUpDated = $manager->upDate($getNews);
             }
 
