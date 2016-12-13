@@ -68,6 +68,11 @@ $manager = new NewsManager($db);
                 $newsUpDated = $manager->upDate($getNews);
             }
 
+            if (isset($_GET['supprimer'])) {
+                $getNewsSupprimer = $manager->getById($_GET['supprimer']);
+                $deleteNews = $manager->delete($getNewsSupprimer);
+            }
+
             $getAllNews = $manager->getAll();
             foreach ($getAllNews as $uneNews) {
                 echo '<tr>';
