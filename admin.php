@@ -6,12 +6,33 @@ function chargerClasse($classname) {
 }
 spl_autoload_register('chargerClasse');
 
-$db = new PDO('mysql:host=localhost;dbname=news', 'root', 'root');
-$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING); // On émet une alerte à chaque fois qu'une requête a échoué.
+$manager = new NewsManager();
 
-$manager = new NewsManager($db);
+if (isset($_GET['modifier'])) {
+    $getNews = $manager->getById($_GET['modifier']);
+    $_SESSION['modifier'] = $_GET['modifier'];
+}
+
+if (isset($_POST['ajouter']) AND !empty($_POST['auteur']) AND !empty($_POST['titre']) AND !empty($_POST['contenu'])) {
+    $news = new News(['auteur' => $_POST['auteur'], 'titre' => $_POST['titre'], 'contenu' => $_POST['contenu']]); 
+    $newsAdded = $manager->add($news);
+} else {
+    $message = '<p>Veuillez remplir tous les champs.</p>';
+}
+
+if (isset($_POST['modifier'])) {
+    $getNews = $manager->getById($_SESSION['modifier']);
+    $getNews->setAuteur($_POST['auteur']);
+    $getNews->setTitre($_POST['titre']);
+    $getNews->setContenu($_POST['contenu']);
+    $newsUpDated = $manager->upDate($getNews);
+}
+
+if (isset($_GET['supprimer'])) {
+    $getNewsSupprimer = $manager->getById($_GET['supprimer']);
+    $deleteNews = $manager->delete($getNewsSupprimer);
+}
 ?>
-
 
 <!DOCTYPE html>
 <html>
@@ -23,12 +44,7 @@ $manager = new NewsManager($db);
     <a href="index.php">Accéder à l'accueil du site</a>
     <div style="text-align:center;">
         <form method="POST" action="admin.php">
-        <?php 
-        if (isset($_GET['modifier'])) {
-            $getNews = $manager->getById($_GET['modifier']);
-            $_SESSION['modifier'] = $_GET['modifier'];
-        }
-        ?>
+        
             <p>Auteur : <input type="text" name="auteur" <?php if (isset($_GET['modifier'])) echo 'value="' . $getNews->auteur() . '"'; ?> /></p>
             <p>Titre : <input type="text" name="titre" <?php if (isset($_GET['modifier'])) echo 'value="' . $getNews->titre() . '"'; ?> /></p>
             <p>Contenu : <br /> 
@@ -42,7 +58,7 @@ $manager = new NewsManager($db);
             ?>
             
         </form>    
-        <p>Il y a actuellement <?php ?> news. En voici la liste : </p>
+        <p>Il y a actuellement <?php echo $manager->count(); ?> news. En voici la liste : </p>
 
         <table style="margin:auto;">
             <tr>
@@ -52,33 +68,14 @@ $manager = new NewsManager($db);
                 <th>Dernière modification</th>
                 <th>Action</th>
             </tr>
+            
             <?php
-            if (isset($_POST['ajouter']) AND !empty($_POST['auteur']) AND !empty($_POST['titre']) AND !empty($_POST['contenu'])) {
-                $news = new News(['auteur' => $_POST['auteur'], 'titre' => $_POST['titre'], 'contenu' => $_POST['contenu']]); 
-                $newsAdded = $manager->add($news);
-            } else {
-                $message = '<p>Veuillez remplir tous les champs.</p>';
-            }
-
-            if (isset($_POST['modifier'])) {
-                $getNews = $manager->getById($_SESSION['modifier']);
-                $getNews->setAuteur($_POST['auteur']);
-                $getNews->setTitre($_POST['titre']);
-                $getNews->setContenu($_POST['contenu']);
-                $newsUpDated = $manager->upDate($getNews);
-            }
-
-            if (isset($_GET['supprimer'])) {
-                $getNewsSupprimer = $manager->getById($_GET['supprimer']);
-                $deleteNews = $manager->delete($getNewsSupprimer);
-            }
-
             $getAllNews = $manager->getAll();
             foreach ($getAllNews as $uneNews) {
-                echo '<tr>';
-                echo '<td>' . $uneNews->auteur() . '</td>';
-                echo '<td>' . $uneNews->titre() . '</td>'; 
-                echo '<td>' . $uneNews->dateAjout() . '</td>'; 
+                echo '<tr>
+                <td>' . $uneNews->auteur() . '</td>
+                <td>' . $uneNews->titre() . '</td> 
+                <td>' . $uneNews->dateAjout() . '</td>'; 
                 if ($uneNews->dateModif() != "00/00/0000 à 00h00") {
                     echo '<td>' . $uneNews->dateModif() . '</td>'; 
                 } else {

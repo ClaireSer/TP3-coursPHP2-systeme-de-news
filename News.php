@@ -1,5 +1,5 @@
 <?php
-class News { // but : représenter une news
+class News { 
 //attributs    
     private $_id,
             $_titre,
